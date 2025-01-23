@@ -1,0 +1,127 @@
+//MAQUINAS RPM CAN
+
+>VSLP_CAN1<
+
+//----------------------------------------------------------------------------
+
+//********************
+//*    	RPM (J1939)  *
+//********************
+
+//PGN: 61444
+//Captura da PGN - Salva o valor lido no CT27
+>VS2900,61444,0,29,27,4,2,0000FFFF,0,0,1000<
+>VS2900_MAT,/8<
+
+>SED214 TT00++ IN07-- SGN NN {SCT27 0}<
+
+//----------------------------------------------------------------------------
+
+//*********************
+//* Velocidade (GPS)  *
+//*********************
+
+//Velocidade no GP
+>SGG_SCT99<
+
+//Captura Velocidade GPS
+>SUT07,QGP,33,03,20,255<
+
+//captura velocidade por GPS
+>SED211U<
+
+//adiciona offset de velocidade GPS
+>SED212U<
+
+//Velocidade
+>SCT64 0<
+
+//----------------------------------------------------------------------------
+
+//*********************
+//*  Hodometro (GPS)  *
+//*********************
+
+//Calculado
+>SUT50,QCT03,07,15,0,100<
+
+//constante de hodometro
+>SCT07 95<
+
+>SED203U<
+>SED204U<
+>SED205U<
+					 
+>SCT01 0<
+
+//--------------------------------------------------------------------------
+
+//***********************
+//*  Horímetro          *
+//***********************
+
+//baseado no motor Girando
+>SED119 TT00++ UC10++ SGN NN {SCT02 +1}<
+
+//Horímetro (em segundos)
+>SCT02 0<
+
+//----------------------------------------------------------------------------
+
+//**************
+//*  Freada    *
+//**************
+
+>SED206 TT00++ IN07++ SGN NN {SCT76 VCT64-VCT75/1000}{SCT75 VCT64}<
+
+//----------------------------------------------------------------------------
+
+//***************************
+//*  Limpador Para-Brisa    *
+//***************************
+//(Não disponível)
+
+>SED70U<
+>SED71U<
+>SED72U<
+>SED73U<
+>SED74U<
+>SED75U<
+>SED76U<
+
+//----------------------------------------------------------------------------
+
+//****************************
+//* Discretas Virtuais		 *
+//****************************
+
+//Prepara os dados para Discreta Virtual 1 a 4
+//CT78 D1D2D3D4
+//D1 (CT80) = SCT78 |VCT80&HFF*16777216 (Limpador)
+//D2 (CT81) = SCT78 |VCT81&HFF*65536    (Freio)
+//D3 (CT82) = SCT78 |VCT82&HFF*256		(Farol)
+//D4 (CT83) = SCT78 |VCT83&HFF			(Cinto)
+//Caso não tenha a discreta substituir por SCT78 |FF*x, onde x é correspondente a discreta
+>SED10 TT00++ +- SGN NN {SCT78 HFFFFFFFF}<
+>SED11U<
+
+//Prepara os dados para Discreta Virtual 5 a 8
+//CT79 D5D6D7D8
+//D1 (CT84) = SCT79 |VCT84&HFF*16777216
+//D2 (CT85) = SCT79 |VCT85&HFF*65536
+//D3 (CT86) = SCT79 |VCT86&HFF*256
+//D4 (CT87) = SCT79 |VCT87&HFF
+//Caso não tenha a discreta substituir por SCT789 |FF*x, onde x é correspondente a discreta
+>SED12 TT00++ +- SGN NN {SCT79 HFFFFFFFF}<
+>SED13U<
+
+//----------------------------------------------------------------------------
+
+//*************************
+//*  Habilita CAN         *
+//*************************
+
+>VS29_ENA250,0<
+>STP02 MaqRpmCan&semVel.230324<
+>SCC58 5<
+>SSO_MS005<

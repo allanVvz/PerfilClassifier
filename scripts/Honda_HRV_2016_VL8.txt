@@ -1,0 +1,163 @@
+//CAN HRV VL8
+
+>VSLP_CAN1<
+
+//---------------------------------------------------------------------------
+
+//*************************
+//*    	RPM/pedal do Freio   *
+//************************
+
+//RPM PID: 0x316 (790d) - Bytes: 4 e 3 (big endian)
+//Ganho: 0,250 rpm/bit Offset: 0 rpm
+>VS2900,380,000,11,27,3,2,0000FFFF,0,0,1000,81,5,5,00000001,0,0,1000<
+ 
+//Converte o valor lido para RPM - CT27 � o RPM atual
+//>VS2900_MAT,/4<
+>SED213 TT00++ IN07++ SGN NN {SCT27 VCT26&HFF*256}{SCT27 |VCT26/256}<
+>SED214 TT00++ IN07-- SGN NN {SCT27 0}<
+
+//----------------------------------------------------------------------------
+
+//****************
+//* Velocidade   *
+//****************
+
+//Ganho: -- m/h/bit - Offset: 0 km/h
+//Velocidade PID 0x316 (790d) Byte 7 (km/h)
+>VS2901,777,000,11,48,5,2,0000FFFF,0,0,1000<
+
+//Ajuste 100,0% do valor da CAN
+>SCT05 1000< 
+
+//Converte o valor lido para RPM - CT64 � a velocidade atual (m/h)
+>SED211 TT00++ IN07++ SGN NN {SCT89 VCT48&HFF*256}{SCT89 |VCT48/256}<
+>SED212 TT00++ IN07++ SGN NN {SCT64 VCT89*VCT05}{SCT64 /100}<
+
+//----------------------------------------------------------------------------
+
+//**************
+//*  Hodometro/Limpador Para-Brisa *
+//**************
+
+//Calculado
+>VS2902,660,000,11,49,4,3,00FFFFFF,0,0,1000,80,1,1,00000018,0,0,1000<
+ 
+>SCT07 95<
+ 
+>SED203 TT00++ IN07++ SGN NN {SCT85 VCT49&HFF*H10000}{SCT85 |VCT49&HFF00}<
+>SED204 TT00++ IN07++ SGN NN {SCT85 |VCT49/H10000}<
+>SED205 TT00++ IN07++ SGN NN {SCT28 VCT85*10}{GGRVCT28VCT01}{SCT01 VCT28}<
+
+//Hodometro (em 100m)
+>SCT01 0<
+
+
+//----------------------------------------------------------------------------
+
+//*********************
+//*  Hor�metro (RPM)  *
+//*********************
+
+>SED119 TT00++ UC15++ SGN NN {SCT02 +1}<
+
+>SCT02 0<
+
+//----------------------------------------------------------------------------
+
+//***************************
+//*  Limpador Para-Brisa    *
+//***************************
+
+>SUT02,QCT80,7,5,32,32<
+
+//---------------------------------------------------------------------------
+
+//************
+//*  Farol   *
+//************
+
+//PID 0x1A6 (422d) - Byte 1 - MÁSCARA 0x03
+// 0  - Desligado
+// 3  - Ligado
+>VS2903,422,000,11,82,1,1,00000003,0,0,1000<
+
+//---------------------------------------------------------------------------
+
+//*************************
+//*  Cinto de Segurança   *
+//*************************
+
+//PID 0X305 (773d) - Byte 2 - MÁSCARA 0x20
+// 0  - Cinto de Segurança Desconectado
+// 32 - Cinto de Segurança Conectado
+>VS2904,773,000,11,83,2,1,00000020,0,0,1000<
+
+>SUT58,QCT83,7,5,32,32<
+>SUT59,QCT64,7,6,20000,255000<
+
+>SED38 CC38-- UC58--&&UC59++&&CL39++ GF0 V0 {SCC39 HFFFFF}{SCT7172 0}<
+>SED39 TT00++ UC59--||UC58++&&CL39-- GF0 V9 {SCT55 VCT71}{SCT54 VCT72}{SCC39 0}<
+>SED138 TT00++ UC58--&&UC59++&&CL38++ SGN NN {SCT88 |VCT16&2048}{SCC38 5}<
+>SED139 TT00++ CL39--&&UC59++&&UC58-- SGN NN {GGRVCT64VCT71}{SCT71 VCT64}{SCT72 VCT27}<
+
+//----------------------------------------------------------------------------
+
+
+
+//********************
+//*   Faixas RPM     *
+//********************
+
+//RPM Marcha Lenta
+>SUT11,QCT27,7,15,400,1100<	
+
+//RPM Faixa Verde
+>SUT12,QCT27,7,15,1200,4000<
+
+//RPM Excesso
+>SUT13,QCT27,7,15,5500,9999<
+
+//RPM Faixa Verde Ext. (Freio Motor)
+>SUT14,QCT27,7,15,9999,9999<
+
+//RPM Ex. RPM Evento (Freio Motor)
+>SUT15,QCT27,7,15,9999,9999<
+
+//---------------------------------------------------------------------------
+
+//****************************
+//* Discretas Virtuais		 *
+//****************************
+
+//Prepara os dados para Discreta Virtual 1 a 4
+//CT78 D1D2D3D4
+//D1 (CT80) = SCT78 |VCT80&HFF*16777216 (Limpador)
+//D2 (CT81) = SCT78 |VCT81&HFF*65536    (Freio)
+//D3 (CT82) = SCT78 |VCT82&HFF*256		(Farol)
+//D4 (CT83) = SCT78 |VCT83&HFF			(Cinto)
+//Caso n�o tenha a discreta substituir por SCT78 |FF*x, onde x � correspondente a discreta
+>SED10 TT00++ +- SGN NN {SCT78 FF00FFFF}{SCT78 |HFF*65536}<
+>SED11U<
+
+//Prepara os dados para Discreta Virtual 5 a 8
+//CT79 D5D6D7D8
+//D1 (CT84) = SCT79 |VCT84&HFF*16777216
+//D2 (CT85) = SCT79 |VCT85&HFF*65536
+//D3 (CT86) = SCT79 |VCT86&HFF*256
+//D4 (CT87) = SCT79 |VCT87&HFF
+//Caso n�o tenha a discreta substituir por SCT789 |FF*x, onde x � correspondente a discreta
+//>SED12 TT00++ +- SGN NN {SCT79 0}{SCT79 |VCT87&HFF}{SCT79 |VCT86&HFF*256}<
+//>SED13 TT00++ +- SGN NN {SCT79 |VCT85&HFF*65536}{SCT79 |VCT84&HFF*16777216}<
+>SED12 TT00++ +- SGN NN {SCT79 HFFFFFFFF}<
+>SED13U<
+
+//----------------------------------------------------------------------------
+
+//*************************
+//*  Habilita CAN         *
+//*************************
+
+>VS29_ENA500,0<
+>STP02 Honda_HRV_2016.240219<
+>SSO<
