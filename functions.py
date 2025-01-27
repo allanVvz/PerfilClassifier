@@ -108,9 +108,9 @@ def message(path):
 
 def Get_cc_tag(tudo):
     try:
-        cc_tag = re.search('[cc.id].*', tudo)
+        cc_tag = re.search(r'[cc.id].*', tudo)
         if cc_tag is not None:
-            cc_tag = re.search('\d\d*',cc_tag.group()).group()
+            cc_tag = re.search(r'\d\d*',cc_tag.group()).group()
         return cc_tag
     except Exception as e:
         logging.error(f'Erro ao extrair CC_ID tag: {e}')
@@ -183,35 +183,25 @@ def verificar_mifare(tudo):
 #         versao = versao.replace('-', '')[-6::]
 #     return versao
 
+
 def extrair_versao(tudo):
     try:
-        versao = re.search('>STP01.*<', tudo)
+        versao = re.search(r'>STP01.*<', tudo)
         if versao is not None:
-            versao1 = re.search('-', versao.group())
-            if versao1 is None:
-                versao1 = re.search('>STP01.*<', tudo).group()
-                versao1 = re.search('\d\d\d\d*', versao1).group()
-                return versao1
-        versao = re.search('>STP03.*<', tudo)
+            versao1 = re.search(r'\d\d\d\d*', versao.group())
+            return versao1.group() if versao1 else None
+        versao = re.search(r'>STP03.*<', tudo)
         if versao is not None:
-            versao2 = re.search('-', versao.group())
-            if versao2 is None:
-                versao2 = re.search('\d\d\d\d*', versao.group()).group()
-                return versao2
-        versao = re.search('>STP02.*<', tudo)
+            versao2 = re.search(r'\d\d\d\d*', versao.group())
+            return versao2.group() if versao2 else None
+        versao = re.search(r'>STP02.*<', tudo)
         if versao is not None:
-            versao1 = re.search('-+', versao.group())
-            if versao1 is None:
-                versao1 = re.search('>STP02.*<', tudo).group()
-                versao1 = re.search('\d\d\d\d*(?!.*\d\d\d\d*)', versao1).group()
-                return versao1
-        versao = re.search('>STP00.*<', tudo)
+            versao1 = re.search(r'\d\d\d\d*(?!.*\d\d\d\d*)', versao.group())
+            return versao1.group() if versao1 else None
+        versao = re.search(r'>STP00.*<', tudo)
         if versao is not None:
-            versao1 = re.search('-+', versao.group())
-            if versao1 is None:
-                versao1 = re.search('>STP00.*<', tudo).group()
-                versao1 = re.search('\d\d\d\d*(?!.*\d\d\d\d*)', versao1).group()
-                return versao1
+            versao1 = re.search(r'\d\d\d\d*(?!.*\d\d\d\d*)', versao.group())
+            return versao1.group() if versao1 else None
         return str(date.today()).replace('-', '')[-6:]
     except Exception as e:
         logging.error(f'Erro ao extrair versão: {e}')
@@ -256,7 +246,7 @@ def tempo_infra_S1(tudo):
             tempo_infra = re.findall('>SCT06.*<', tudo)[0]
             tempo_infra = tempo_infra[7:-1]
             return tempo_infra
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'tempo_infra_S1 : {e}')
 
@@ -287,24 +277,24 @@ def extrair_versao_s1(tudo):
         if versao is not None:
             versao1 = re.search('-', versao.group())
             if versao1 is not None:
-                versao1 = re.search('-', versao1.group())
+                versao1 = re.search(r'-', versao1.group())
             else:
-                versao1 = re.search('>SIS82.*<', tudo).group()
-                versao1 = re.search('\d\d\d\d*', versao1).group()
+                versao1 = re.search(r'>SIS82.*<', tudo).group()
+                versao1 = re.search(r'\d\d\d\d*', versao1).group()
             return versao1
         else:
-            versao = re.search('>SIS84.*<', tudo)
+            versao = re.search(r'>SIS84.*<', tudo)
             if versao is not None:
-                versao2 = re.search('>SIS84.*<', tudo).group()
+                versao2 = re.search(r'>SIS84.*<', tudo).group()
                 if versao2 != '-':
-                    versao2 = re.search('\d\d\d\d*', versao2).group()
+                    versao2 = re.search(r'\d\d\d\d*', versao2).group()
                     return versao2
-        versao = re.search('>SIS83.*<', tudo)
+        versao = re.search(r'>SIS83.*<', tudo)
         if versao is not None:
             versao1 = re.search('-+', versao.group())
             if versao1 is None:
-                versao1 = re.search('>SIS83.*<', tudo).group()
-                versao1 = re.search('\d\d\d\d*(?!.*\d\d\d\d*)', versao1).group()
+                versao1 = re.search(r'>SIS83.*<', tudo).group()
+                versao1 = re.search(r'\d\d\d\d*(?!.*\d\d\d\d*)', versao1).group()
                 return versao1
         return str(date.today()).replace('-', '')[-6:]
     except Exception as e:
@@ -319,8 +309,8 @@ def versao_can(tudo):
         if versao is not None:
             versao1 = re.search('-+', versao.group())
             if versao1 is None:
-                versao1 = re.search('>STP02.*<', tudo).group()
-                versao1 = re.search('\d\d\d\d*(?!.*\d\d\d\d*)', versao1).group()
+                versao1 = re.search(r'>STP02.*<', tudo).group()
+                versao1 = re.search(r'\d\d\d\d*(?!.*\d\d\d\d*)', versao1).group()
                 versao = versao1
         if versao is None:
             versao = str(date.today())
@@ -332,10 +322,10 @@ def versao_can(tudo):
 def velocidade_s3(comandos):
     try:
         for i in range(len(comandos)):
-            velocidade = re.search('>S19.*<', comandos[i])
+            velocidade = re.search(r'>S19.*<', comandos[i])
             if velocidade is not None:
                 velocidade = velocidade.group().split(',')[2]
-                velocidade = re.search('48', velocidade)
+                velocidade = re.search(r'48', velocidade)
                 if velocidade is not None:
                     return 'CAN'
         return 'SENSOR'
@@ -344,36 +334,36 @@ def velocidade_s3(comandos):
 
 def rpm_s3(comandos):
     try:
-        for i in range(len(comandos)):
-            rpm = re.search('>S19.*<', comandos[i])
+        for comando in comandos:
+            rpm = re.search(r'>S19.*<', comando)
             if rpm is not None:
-                rpm = rpm.group().split(',')[2]
-                rpm = re.search('26', rpm)
-                if rpm is not None:
+                rpm_value = rpm.group().split(',')[2]
+                if re.search(r'26', rpm_value):
                     return 'CAN'
         return 'SENSOR'
     except Exception as e:
         logging.error(f'Erro ao extrair RPM S3: {e}')
 
+
 def extrair_limpador(comandos):
     try:
         for i in range(len(comandos)):
-            limpador = re.search('>SUT02,QCT80.*<', comandos[i])
+            limpador = re.search(r'>SUT02,QCT80.*<', comandos[i])
             if limpador is not None:
                 return 'CAN'
             
-            limpador = re.search('>SUT02,QIN.*<', comandos[i])
+            limpador = re.search(r'>SUT02,QIN.*<', comandos[i])
             if limpador is not None:
                 return 'SENSOR'
         
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair limpador: {e}')
 
 def odometro_s3(comandos):
     try:
         for i in range(len(comandos)):
-            odometro = re.search('>S19.*<', comandos[i])
+            odometro = re.search(r'>S19.*<', comandos[i])
             if odometro is not None:
                 odometro = odometro.group().split(',')[2]
                 odometro = re.search('49', odometro)
@@ -383,7 +373,7 @@ def odometro_s3(comandos):
             odometro = re.search('>SUT50,QCT03,07,15,0,1.*<', comandos[i])
             if odometro is not None:
                 return 'SENSOR'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair odometro: {e}')
 
@@ -391,7 +381,7 @@ def odometro_s3(comandos):
 def horimetro_s3(comandos):
     try:
         for i in range(len(comandos)):
-            horimetro = re.search('>S19.*<', comandos[i])
+            horimetro = re.search(r'>S19.*<', comandos[i])
             if horimetro is not None:
                 horimetro = horimetro.group().split(',')[2]
                 horimetro1 = re.search('29', horimetro)
@@ -401,7 +391,7 @@ def horimetro_s3(comandos):
             horimetro = re.search('>SED119.*<', comandos[i])
             if horimetro is not None:
                 return 'CALCULADO'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair horimetro S3: {e}')
 
@@ -414,7 +404,7 @@ def freio_s3(comandos):
                 freio = re.search('81', freio)
                 if freio is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair freio S3: {e}')
 
@@ -427,7 +417,7 @@ def farol_s3(comandos):
                 farol = re.search('82', farol)
                 if farol is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair farol S3: {e}')
 
@@ -440,7 +430,7 @@ def cinto_s3(comandos):
                 cinto = re.search('83', cinto)
                 if cinto is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair cinto S3: {e}')
 
@@ -453,7 +443,7 @@ def freio_mao_s3(comandos):
                 freio_mao = re.search('84', freio_mao)
                 if freio_mao is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair freio de mao S3: {e}')
 
@@ -464,7 +454,7 @@ def litrometro(comandos):
                 return 'CAN'
             if re.search('>SED36.*',comando) is not None:
                 return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair litrometro: {e}')
 
@@ -483,50 +473,52 @@ def litrometro(comandos):
 def velocidade_s1(comandos):
     try:
         for comando in comandos:
-            velocidade = re.search('(>VS19\d.*<)', comando)
-            if velocidade is not None:
-                velocidade = (velocidade.group().split(',')[4])
-                velocidade1 = re.search('05', velocidade)
-                velocidade = re.search('04', velocidade)
-                if velocidade is not None or velocidade1 is not None:
-                    return 'CAN'
-        return None
+            match = re.search(r'(>VS19\d.*<)', comando)
+            if match is not None:
+                partes = match.group().split(',')
+                if len(partes) > 4:  # Certifique-se de que o índice 4 existe
+                    velocidade = partes[4]
+                    if re.search(r'05', velocidade) or re.search(r'04', velocidade):
+                        return 'CAN'
+                else:
+                    logging.warning(f"Comando inesperado para velocidade: {comando}")
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair velocidade S1: {e}')
 
 def rpm_s1(comandos):
     try:
         for comando in comandos:
-            rpm = re.search('(>VS19\d.*<)', comando)
-            if rpm is not None:
-                rpm = rpm.group().split(',')[4]
-                rpm = re.search('03', rpm)
-                if rpm is not None:
-                    return 'CAN'
-        return None
+            match = re.search(r'(>VS19\d.*<)', comando)
+            if match is not None:
+                partes = match.group().split(',')
+                if len(partes) > 4:  # Certifique-se de que o índice 4 existe
+                    rpm = partes[4]
+                    if re.search(r'03', rpm):
+                        return 'CAN'
+                else:
+                    logging.warning(f"Comando inesperado para RPM: {comando}")
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair RPM S1: {e}')
+        return None
 
 def odometro_s1(comandos):
     try:
         for comando in comandos:
-            odometro = re.search('(>VS19\d.*<)', comando)
-            odometroSUT = re.search('>SUT05,QCT07.*<', comando)
-            if odometro is not None:
-                odometro = odometro.group().split(',')[4]
-                odometro1 = re.search('07', odometro)
-                odometro = re.search('01', odometro)
-                if odometro is not None:
-                    return 'CAN'
-                if odometro1 is not None:
-                    odometro_event = re.search('>SED06U<', comando)
-                    if odometro_event is None:
+            match = re.search(r'(>VS19\d.*<)', comando)
+            if match is not None:
+                partes = match.group().split(',')
+                if len(partes) > 4:  # Certifique-se de que o índice 4 existe
+                    odometro = partes[4]
+                    if re.search(r'01', odometro) or re.search(r'07', odometro):
                         return 'CAN'
-            if odometroSUT is not None:
-                return 'CALCULADO'
-        return None
+                else:
+                    logging.warning(f"Comando inesperado para odômetro: {comando}")
+        return 'N/A'
     except Exception as e:
-        logging.error(f'Erro ao extrair odometro S1: {e}')
+        logging.error(f'Erro ao extrair odômetro S1: {e}')
+        return None
 
 # def velocidade_s8(comandos):
 #     for comando in comandos:
@@ -547,7 +539,7 @@ def odometro_s1(comandos):
 #                     velocidade2 = re.search('48', velocidade)
 #                 if velocidade1 is not None or velocidade2 is not None:
 #                     return 'CAN'
-#     return None
+#     return 'N/A'
         
 def velocidade_s8(comandos):
     try:
@@ -562,7 +554,7 @@ def velocidade_s8(comandos):
                     velocidade = match.group().split(',')[11]
                 if velocidade is not None and re.search('(64|48)', velocidade):
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair velocidade S8: {e}')
 
@@ -580,7 +572,7 @@ def rpm_s8(comandos):
                         return 'CAN'
                 except IndexError:
                     continue
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair RPM S8: {e}')
 
@@ -596,7 +588,7 @@ def odometro_s8(comandos):
             odometro = re.search('>SUT50,QCT03,07,15,0,1.*<', comando)
             if odometro is not None:
                 return 'SENSOR'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair odometro S8: {e}')
 
@@ -612,7 +604,7 @@ def horimetro_s8(comandos):
             horimetro = re.search('>SED119.*<', comando)
             if horimetro is not None:
                 return 'CALCULADO'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair horimetro S8: {e}')
 
@@ -630,7 +622,7 @@ def freio_s8(comandos):
                         return 'CAN'
                 except IndexError:
                     continue
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair freio S8: {e}')
 
@@ -643,7 +635,7 @@ def farol_s8(comandos):
                 farol = re.search('82', farol)
                 if farol is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair farol S8: {e}')
 
@@ -656,7 +648,7 @@ def cinto_s8(comandos):
                 cinto = re.search('83', cinto)
                 if cinto is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair cinto S8: {e}')
 
@@ -669,6 +661,57 @@ def freio_mao_s8(comandos):
                 freio_mao = re.search('84', freio_mao)
                 if freio_mao is not None:
                     return 'CAN'
-        return None
+        return 'N/A'
     except Exception as e:
         logging.error(f'Erro ao extrair freio de mao S8: {e}')
+
+def extrair_nome(comandos):
+    """
+    Busca pelo padrão >STP02 ...< na lista de comandos e retorna o nome antes do ponto.
+
+    Args:
+        comandos (list): Lista de comandos para busca.
+
+    Returns:
+        str: Nome extraído antes do ponto, ou None se não encontrado.
+    """
+    try:
+        for comando in comandos:
+            logging.info(f"Procurando no comando: {comando}")
+            match = re.search(r'>STP02\s+([\w\-\.]+)<', comando)
+            if match:
+                nome_completo = match.group(1)
+                nome_extraido = nome_completo.split('.')[0]
+                logging.info(f"Nome extraído: {nome_extraido}")
+                return nome_extraido
+        logging.warning("Padrão STP02 não encontrado em nenhum comando.")
+        return None
+    except Exception as e:
+        logging.error(f"Erro ao extrair nome STP02: {e}")
+        return None
+
+
+def extrair_nome_s1(comandos):
+    """
+    Busca pelo padrão >STP02 ...< na lista de comandos e retorna o nome antes do ponto.
+
+    Args:
+        comandos (list): Lista de comandos para busca.
+
+    Returns:
+        str: Nome extraído antes do ponto, ou None se não encontrado.
+    """
+    try:
+        for comando in comandos:
+            logging.info(f"Procurando no comando: {comando}")
+            match = re.search(r'>SIS83\s+([\w\-\.]+)<', comando)
+            if match:
+                nome_completo = match.group(1)
+                nome_extraido = nome_completo.split('.')[0]
+                logging.info(f"Nome extraído: {nome_extraido}")
+                return nome_extraido
+        logging.warning("Padrão STP02 não encontrado em nenhum comando.")
+        return None
+    except Exception as e:
+        logging.error(f"Erro ao extrair nome STP02: {e}")
+        return None
